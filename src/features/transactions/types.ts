@@ -1,6 +1,9 @@
-// Shared transaction types consumed by RSC pages and client hooks
-
-export type TransactionStatus = "pending" | "committed" | "rolled_back" | "compensating";
+export type TransactionStatus =
+  | "pending"
+  | "committed"
+  | "aborted"
+  | "rolled_back"
+  | "compensating";
 
 export interface Transaction {
   id: string;
