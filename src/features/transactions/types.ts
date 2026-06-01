@@ -7,12 +7,11 @@ export type TransactionStatus =
 
 export interface Transaction {
   id: string;
+  correlationId: string;
   tenantId: string;
   status: TransactionStatus;
-  createdAt: string;
-  updatedAt: string;
-  correlationId: string;
-  participantCount: number;
   service: string;
   amount: number;
+  createdAt: string;
+  updatedAt: string;
 }
