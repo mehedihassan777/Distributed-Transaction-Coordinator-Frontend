@@ -1,9 +1,18 @@
+export type TransactionStatus =
+  | "pending"
+  | "committed"
+  | "aborted"
+  | "rolled_back"
+  | "compensating";
+
 export interface Transaction {
   id: string;
   tenantId: string;
-  status: "pending" | "committed" | "aborted" | "compensating";
+  status: TransactionStatus;
   createdAt: string;
   updatedAt: string;
-  participantCount: number;
   correlationId: string;
+  participantCount: number;
+  service: string;
+  amount: number;
 }

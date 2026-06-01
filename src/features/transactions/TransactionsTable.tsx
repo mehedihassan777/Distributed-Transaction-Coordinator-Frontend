@@ -13,6 +13,7 @@ const STATUS_VARIANT: Record<
   pending: "warning",
   compensating: "secondary",
   aborted: "destructive",
+  rolled_back: "destructive",
 };
 
 const COLUMNS: ColumnDef<Transaction>[] = [

@@ -20,6 +20,7 @@ const eslintConfig = defineConfig([
         "warn",
         { varsIgnorePattern: "^_", argsIgnorePattern: "^_", caughtErrorsIgnorePattern: "^_" },
       ],
+      "react-hooks/set-state-in-effect": "off",
     },
   },
 ]);

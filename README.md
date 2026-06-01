@@ -1,36 +1,87 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Distributed Transaction Coordinator — Frontend
 
-## Getting Started
+A high-performance **Next.js 16 (App Router)** frontend for the multi-tenant Distributed Transaction Coordinator .NET 8 API.
 
-First, run the development server:
+> If a user places an order, the inventory service reserves stock, and the payment service charges the card. If the payment fails, how do you reliably rollback the inventory without distributed locks? This dashboard lets you monitor and manage exactly that.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## Architecture overview
+
+| Layer | Technology |
+|---|---|
+| Framework | Next.js 16 — App Router, React Server Components |
+| Language | TypeScript (strict mode) |
+| Styling | Tailwind CSS v4 + custom Shadcn-style UI primitives |
+| State / Hooks | Custom React hooks (`useTransactions`, `useProducts`, `useAuth`, `useDebounce`) |
+| Notifications | [Sonner](https://sonner.emilkowal.ski/) toast library |
+| Testing | Jest 30 + React Testing Library |
+
+## Project structure
+
+```
+src/
+├── app/
+│   ├── layout.tsx                  # Root Server Component — Toaster, global CSS
+│   ├── page.tsx                    # Redirects → /dashboard
+│   └── (dashboard)/
+│       ├── layout.tsx              # Shell: Sidebar + Header wrapper
+│       ├── dashboard/page.tsx      # RSC — stats fetched server-side
+│       ├── transactions/page.tsx   # Client table island
+│       ├── products/page.tsx       # Client table island
+│       └── settings/page.tsx
+├── components/
+│   ├── ui/                         # Button, Card, Badge, Input, Table, Skeleton, DataTable
+│   └── layout/                     # Sidebar (collapsible), Header
+├── features/
+│   ├── dashboard/                  # StatsCard + StatsOverview (RSC)
+│   ├── transactions/               # TransactionsTable + useTransactions hook
+│   └── products/                   # ProductsTable + useProducts hook
+├── hooks/
+│   ├── use-auth.ts                 # JWT token management
+│   └── use-debounce.ts             # Generic debounce hook
+├── lib/
+│   └── api/
+│       ├── client.ts               # apiFetch with JWT injection + api.get/post/…
+│       └── types.ts                # PaginatedResponse, ApiError, TableQueryParams
+└── __tests__/
+    └── components/
+        └── data-table.test.tsx     # 20-test RTL suite for DataTable
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Fonts
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+The app uses a system font stack (`ui-sans-serif, system-ui, …`) defined in `src/app/globals.css`, requiring no external font service.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Getting started
 
-## Learn More
+```bash
+# Install dependencies
+npm install
 
-To learn more about Next.js, take a look at the following resources:
+# Set your API base URL
+echo 'NEXT_PUBLIC_API_BASE_URL=http://localhost:5000/api' > .env.local
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+# Run the dev server
+npm run dev
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Open [http://localhost:3000](http://localhost:3000) — you will be redirected to `/dashboard`.
 
-## Deploy on Vercel
+## Environment variables
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+| Variable | Description | Default |
+|---|---|---|
+| `NEXT_PUBLIC_API_BASE_URL` | Base URL of the .NET 8 API | `http://localhost:5000/api` |
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Testing
+
+```bash
+npm test              # run all tests once
+npm run test:watch    # watch mode
+npm run test:coverage # with coverage report
+```
+
+The test suite covers the `DataTable` component with 20 behaviour-focused tests: rendering, empty state, skeleton loaders, pagination, sorting, debounced search, and custom cell renderers.
+
+## Authentication
+
+JWT access tokens are stored in `localStorage` under the key `dtc_access_token`. The `apiFetch` utility reads the token automatically — client components via `localStorage`, server components via an HTTP-only cookie of the same name. Call `saveToken(token)` after a successful login and `clearToken()` on logout, or use the `useAuth()` hook.
